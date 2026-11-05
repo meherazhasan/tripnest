@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>My Bookings 🎫</h1>
+        <p class="lead">{{ bookings|length }} booking(s)</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if bookings %}
+    <div class="table-responsive form-card">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Destination</th>
+                    <th>Dates</th>
+                    <th>People</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td><a href="/booking/{{ b.id }}">{{ b.ref }}</a></td>
+                    <td>{% if b.kind == 'bd' %}🇧🇩{% else %}🌍{% endif %} {{ b.place }}</td>
+                    <td>{{ b.start_date.strftime('%d %b') }} - {{ b.end_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ b.adults + b.children }}</td>
+                    <td>৳{{ '{:,}'.format(b.total_price) }}</td>
+                    <td>
+                        {% if b.status == 'Cancelled' %}
+                            <span class="badge bg-secondary">Cancelled</span>
+                        {% elif b.status == 'Confirmed' %}
+                            <span class="badge bg-success">Confirmed</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">{{ b.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        <a href="/booking/{{ b.id }}" class="btn btn-sm btn-outline-primary rounded-pill">View</a>
+                        {% if b.status != 'Cancelled' %}
+                        <form method="POST" action="/cancel/{{ b.id }}" class="d-inline" onsubmit="return confirm('Cancel this booking?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Cancel</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        You have no bookings yet. <a href="/destinations">Explore Bangladesh</a> or <a href="/world">the world</a> and book your first trip.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

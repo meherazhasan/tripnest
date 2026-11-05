@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - TripNest{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="form-card">
+                <h2 class="text-center mb-4">Sign Up 📝</h2>
+
+                <form method="POST" action="/signup">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" name="name" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" required>
+                        <small class="text-muted">We may call you to confirm your trip.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email (optional)</label>
+                        <input type="email" name="email" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" name="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Sign Up</button>
+                </form>
+
+                <p class="text-center mt-3 mb-0">Already have an account? <a href="/login">Login</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .bd-hero{background:linear-gradient(135deg,#006a4e,#0b3d2e);color:#fff;border-radius:18px;padding:28px 24px;margin:18px 0 20px}
+  .bd-hero h1{margin:0;font-weight:700}
+  .bd-search{border-radius:50px;padding:12px 20px;border:2px solid #0dcaf0;width:100%;max-width:520px}
+  .bd-chip{border:1px solid #0dcaf0;background:#fff;color:#0aa2c0;border-radius:50px;padding:5px 14px;font-size:.85rem;cursor:pointer}
+  .bd-chip.active{background:#0dcaf0;color:#000;font-weight:700}
+  .bd-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.10);height:100%;display:flex;flex-direction:column;transition:transform .2s}
+  .bd-card:hover{transform:translateY(-4px)}
+  .bd-photo{height:210px;background:#2c3e50 center/cover no-repeat;position:relative}
+  .bd-photo .div{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:50px;padding:3px 12px;font-size:.78rem}
+  .bd-body{padding:16px 18px;display:flex;flex-direction:column;flex:1}
+  .bd-body h5{font-weight:700;margin-bottom:6px}
+  .why-label{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#0aa2c0;font-weight:700;margin-bottom:4px}
+  .why-text{font-size:.92rem;color:#444;flex:1;min-height:70px}
+  .src{font-size:.78rem;color:#888;margin:8px 0 12px}
+  .src a{color:#0aa2c0;text-decoration:none}
+</style>
+
+<div class="container py-3">
+  <div class="bd-hero">
+    <h1><i class="bi bi-geo-alt-fill"></i> Explore Bangladesh</h1>
+    <div style="opacity:.85">{{ destinations|length }} places across all divisions</div>
+  </div>
+
+  <div class="mb-3">
+    <input id="bdSearch" class="bd-search" type="text" placeholder="Search place or division...">
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4" id="chips">
+    <button class="bd-chip active" data-div="all">All</button>
+    {% for dv in destinations|map(attribute='division')|unique|sort %}
+    <button class="bd-chip" data-div="{{ dv }}">{{ dv }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4" id="grid">
+    {% for d in destinations %}
+    <div class="col-md-6 col-lg-4 bd-item" data-name="{{ d.name|lower }}" data-div="{{ d.division }}">
+      <div class="bd-card" data-spot="{{ d.name }}">
+        <div class="bd-photo js-photo" style="background-image:url('{{ d.img }}')">
+          <span class="div">{{ d.division }}</span>
+        </div>
+        <div class="bd-body">
+          <h5>{{ d.name }}</h5>
+          <div class="why-label"><i class="bi bi-stars"></i> Why visit</div>
+          <div class="why-text js-why">{{ d.desc }}</div>
+          <div class="src js-src"></div>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener"
+               href="https://www.google.com/search?tbm=isch&q={{ (d.name ~ ' Bangladesh')|urlencode }}"><i class="bi bi-images"></i> Photos</a>
+            <a class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener"
+               href="https://www.google.com/maps/search/{{ (d.name ~ ' Bangladesh')|urlencode }}"><i class="bi bi-geo-alt"></i> Map</a>
+            <a class="btn btn-info btn-sm ms-auto"
+               href="/book?place={{ d.name|urlencode }}&kind=bd"><i class="bi bi-calendar-check"></i> Book Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div id="none" class="text-center text-muted py-5" style="display:none">No place found.</div>
+</div>
+
+<script>
+(function () {
+  var activeDiv = 'all';
+  var box = document.getElementById('bdSearch');
+  function apply() {
+    var q = box.value.trim().toLowerCase(), shown = 0;
+    document.querySelectorAll('.bd-item').forEach(function (it) {
+      var ok = (activeDiv === 'all' || it.dataset.div === activeDiv) &&
+               (!q || it.dataset.name.indexOf(q) > -1 || it.dataset.div.toLowerCase().indexOf(q) > -1);
+      it.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    document.getElementById('none').style.display = shown ? 'none' : '';
+  }
+  box.addEventListener('input', apply);
+  document.querySelectorAll('.bd-chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      document.querySelectorAll('.bd-chip').forEach(function (x) { x.classList.remove('active'); });
+      c.classList.add('active'); activeDiv = c.dataset.div; apply();
+    });
+  });
+
+  var KEY = 'tn_info_bd_v1', cache = {};
+  try { cache = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} }
+
+  function fetchInfo(q) {
+    var url = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*' +
+      '&generator=search&gsrlimit=1&gsrsearch=' + encodeURIComponent(q) +
+      '&prop=pageimages|extracts|info&inprop=url&piprop=thumbnail&pithumbsize=900' +
+      '&exintro=1&explaintext=1&exsentences=3';
+    return fetch(url).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.query || !d.query.pages) return null;
+      var p = d.query.pages[Object.keys(d.query.pages)[0]];
+      return { text: (p.extract || '').trim(), img: p.thumbnail ? p.thumbnail.source : '', url: p.fullurl || '' };
+    });
+  }
+  function render(card, info) {
+    if (!info) return;
+    if (info.text) {
+      card.querySelector('.js-why').textContent = info.text;
+      card.querySelector('.js-src').innerHTML = 'Source: <a target="_blank" rel="noopener" href="' + info.url + '">Wikipedia</a> (CC BY-SA)';
+    }
+    if (info.img) card.querySelector('.js-photo').style.backgroundImage = 'url("' + info.img + '")';
+  }
+  document.querySelectorAll('.bd-card').forEach(function (card, i) {
+    var q = card.dataset.spot + ' Bangladesh';
+    if (cache[q]) { render(card, cache[q]); return; }
+    setTimeout(function () {
+      fetchInfo(q).then(function (info) {
+        if (info) { cache[q] = info; save(); }
+        render(card, info);
+      }).catch(function () {});
+    }, i * 120);
+  });
+})();
+</script>
+{% endblock %}

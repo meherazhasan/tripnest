@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Beyond Borders - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>Beyond Borders 🌍</h1>
+        <p class="lead">{{ total }} famous countries. Click any country to see its top places to visit.</p>
+
+        <form method="GET" action="/world" class="search-pill">
+            <input type="hidden" name="region" value="{{ region }}">
+            <span class="search-icon">🔍</span>
+            <input type="text" name="search" placeholder="Search country or place (e.g. Japan, Eiffel)..." value="{{ search_query }}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="text-center mb-3">
+        {% for r in regions %}
+            <a class="chip {% if region == r %}active{% endif %}" href="{{ url_for('world', region=r, search=search_query) }}">{{ r }}</a>
+        {% endfor %}
+    </div>
+
+    <p class="text-center text-muted">Showing {{ countries|length }} countries</p>
+
+    {% if countries %}
+    <div class="row">
+        {% for c in countries %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <a href="/world/{{ c.code }}" class="country-card">
+                <img src="https://flagcdn.com/w320/{{ c.code }}.png" alt="Flag of {{ c.name }}" loading="lazy">
+                <h5>{{ c.name }}</h5>
+                <small>{{ c.region }} • {{ c.spots|length }} places</small>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center">No country found. Try another name.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}{{ country.name }} - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <img class="big-flag mb-3" src="https://flagcdn.com/w320/{{ country.code }}.png" alt="Flag of {{ country.name }}">
+        <h1>{{ country.name }}</h1>
+        <p class="lead">🌐 {{ country.region }} • Top places to visit</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <a href="/world" class="btn btn-outline-primary rounded-pill mb-4">← Back to all countries</a>
+
+    <div class="row">
+        {% for spot in country.spots %}
+        <div class="col-md-4 mb-4">
+            <div class="spot-card">
+                <div class="spot-photo smart-img" data-q="{{ spot }} {{ country.name }}"><span>📍</span></div>
+                <div class="spot-number">{{ loop.index }}</div>
+                <h4>{{ spot }}</h4>
+                <p class="text-muted">One of the most famous places to visit in {{ country.name }}.</p>
+                <a class="btn btn-sm btn-primary" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q={{ (spot ~ ' ' ~ country.name) | urlencode }}">📷 Photos</a>
+                <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ (spot ~ ' ' ~ country.name) | urlencode }}">🗺️ Map</a>
+                <a class="btn btn-sm btn-success" href="{{ url_for('book', place=spot ~ ', ' ~ country.name, kind='world') }}">
+                    <i class="bi bi-calendar-plus"></i> Book Now
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-center text-muted small">Photos from Wikipedia / Wikimedia Commons.</p>
+</div>
+
+<style>
+    .spot-photo {
+        height: 170px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, #0b1a2b, #1b5e8c);
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+    }
+    .spot-photo.loaded span { display: none; }
+    .spot-card { position: relative; }
+    .spot-card .spot-number {
+        position: absolute;
+        top: 35px;
+        left: 35px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+</style>
+
+<script>
+    const CACHE_KEY = 'tn_img_cache_v1';
+    let cache = {};
+    try { cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (e) {}
+
+    function saveCache() {
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+    }
+
+    async function findImage(q) {
+        if (q in cache) return cache[q];
+        const url = 'https://en.wikipedia.org/w/api.php?action=query&generator=search'
+            + '&gsrsearch=' + encodeURIComponent(q) + '&gsrlimit=1'
+            + '&prop=pageimages&piprop=thumbnail&pithumbsize=800&format=json&origin=*';
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            let src = null;
+            if (data.query && data.query.pages) {
+                const page = Object.values(data.query.pages)[0];
+                if (page && page.thumbnail) src = page.thumbnail.source;
+            }
+            cache[q] = src;
+            saveCache();
+            return src;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function loadFor(el) {
+        const src = await findImage(el.dataset.q);
+        if (!src) return;
+        const probe = new Image();
+        probe.onload = () => {
+            el.style.backgroundImage = "url('" + src + "')";
+            el.classList.add('loaded');
+        };
+        probe.src = src;
+    }
+
+    document.querySelectorAll('.smart-img').forEach(loadFor);
+</script>
+{% endblock %}

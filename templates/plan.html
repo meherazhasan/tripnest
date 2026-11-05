@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Plan {{ place }} - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>Plan Your Trip 🧭</h1>
+        <p class="lead">{{ place }}</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <div class="form-card mb-4">
+        <h5 class="mb-3"><i class="bi bi-signpost-split"></i> Where are you starting from?</h5>
+        <form method="GET" action="/plan" class="row g-2">
+            <input type="hidden" name="place" value="{{ place }}">
+            <input type="hidden" name="kind" value="{{ kind }}">
+            <div class="col-md-9">
+                <input type="text" name="origin" class="form-control" placeholder="e.g. Dhaka" value="{{ origin }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Update routes</button>
+            </div>
+        </form>
+    </div>
+
+    <h4 class="mb-3"><i class="bi bi-map"></i> Best ways to get there</h4>
+    <p class="text-muted">These open Google Maps / Google Flights with live distance, time and prices for your dates.</p>
+    <div class="row mb-5">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>🚗 By Road</h5>
+                <p class="text-muted">Car or bus route with distance and driving time, including live traffic.</p>
+                <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="{{ links.drive }}">Open route</a>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>🚌 Public Transport</h5>
+                <p class="text-muted">Bus, train and metro options with timetables where available.</p>
+                <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="{{ links.transit }}">Open route</a>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>✈️ By Air</h5>
+                <p class="text-muted">Compare flights, airlines and prices for your dates.</p>
+                <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="{{ links.flights }}">Search flights</a>
+            </div>
+        </div>
+        {% if kind == 'bd' %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>🚆 By Train</h5>
+                <p class="text-muted">Book tickets on the official Bangladesh Railway e-ticket site.</p>
+                <a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" href="{{ links.train }}">Railway e-ticket</a>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>🚍 By Bus</h5>
+                <p class="text-muted">Compare AC and non-AC bus tickets online.</p>
+                <a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" href="{{ links.bus }}">Shohoz bus tickets</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="spot-card">
+                <h5>🛂 Before you fly</h5>
+                <p class="text-muted">Check passport validity and visa rules for this country before booking tickets.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <h4 class="mb-3"><i class="bi bi-building"></i> Choose a good hotel</h4>
+    <div class="row mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="spot-card">
+                <h5>Budget</h5>
+                <p class="text-muted">Simple, clean rooms. Good for short trips and tight budgets.</p>
+                <strong>About ৳{{ hotel_price['Budget'] }} / night</strong>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="spot-card">
+                <h5>Standard</h5>
+                <p class="text-muted">AC rooms, attached bath, breakfast often included.</p>
+                <strong>About ৳{{ hotel_price['Standard'] }} / night</strong>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="spot-card">
+                <h5>Luxury</h5>
+                <p class="text-muted">Resort style or 4-5 star. Best for families and comfort.</p>
+                <strong>About ৳{{ hotel_price['Luxury'] }} / night</strong>
+            </div>
+        </div>
+    </div>
+    <small class="text-muted d-block mb-4">Prices above are our estimates. Real prices change by season, so check the live prices below.</small>
+
+    <div class="form-card mb-4">
+        <h5 class="mb-3">See real ratings and live prices</h5>
+        <a class="btn btn-primary me-2 mb-2" target="_blank" rel="noopener" href="{{ links.hotels_map }}">
+            <i class="bi bi-geo-alt"></i> Hotels on Google Maps
+        </a>
+        <a class="btn btn-outline-primary mb-2" target="_blank" rel="noopener" href="{{ links.booking }}">
+            <i class="bi bi-search"></i> Hotels on Booking.com
+        </a>
+    </div>
+
+    <div class="form-card mb-4">
+        <h5 class="mb-3">✅ How to pick a good hotel</h5>
+        <ul class="mb-0">
+            <li>Look for a rating of <strong>4.0+</strong> on Google (or <strong>8+</strong> on Booking.com).</li>
+            <li>Prefer hotels with <strong>100+ reviews</strong>. A few reviews can be fake or biased.</li>
+            <li>Read the <strong>newest reviews</strong> (last 3 months), not just the top ones.</li>
+            <li>Check guest photos, not only the hotel's own photos.</li>
+            <li>Check the distance to the main spot you are visiting.</li>
+            <li>Call the hotel and confirm the price and your dates <strong>before</strong> paying any advance.</li>
+        </ul>
+    </div>
+
+    <div class="text-center">
+        <a href="{{ url_for('book', place=place, kind=kind) }}" class="btn btn-success btn-lg rounded-pill px-5">
+            <i class="bi bi-calendar-plus"></i> Book this trip
+        </a>
+    </div>
+</div>
+{% endblock %}

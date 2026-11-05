@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ place }} - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>Book Your Trip ✈️</h1>
+        <p class="lead">{{ place }}</p>
+        <small>Choose your hotel package first. You can plan your journey (bus, train, flight) after booking.</small>
+    </div>
+</div>
+
+<div class="container py-5">
+    <form method="POST" action="/book" id="bookForm">
+        <input type="hidden" name="kind" value="{{ kind }}">
+        <input type="hidden" name="place" value="{{ place }}">
+        <input type="hidden" name="hotel_type" id="hotel_type" value="budget_ac">
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+
+                <!-- HOTEL PACKAGES -->
+                <div class="sec-card mb-4">
+                    <div class="sec-head sec-green"><i class="bi bi-building"></i> Choose your hotel package</div>
+                    <div class="sec-body">
+                        <div class="text-center mb-3" id="tierChips">
+                            {% for t in ['All', 'Budget', 'Standard', 'Premium', 'Luxury', 'Day trip'] %}
+                            <a href="#" class="chip {% if t == 'All' %}active{% endif %}" data-tier="{{ t }}">{{ t }}</a>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-3" id="pkgList">
+                            {% for p in packages %}
+                            <div class="col-12 col-md-6 pkg-col" data-tier="{{ p.tier }}">
+                                <div class="pkg pkg-{{ p.tier|lower|replace(' ', '-') }} {% if p.id == 'budget_ac' %}selected{% endif %}" data-id="{{ p.id }}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="pkg-icon">{{ p.icon }}</div>
+                                        <span class="badge bg-dark">{{ p.tier }}</span>
+                                    </div>
+                                    <div class="pkg-title">{{ p.name }}</div>
+                                    <div class="pkg-desc">{{ p.desc }}</div>
+
+                                    {% if p.stay %}
+                                    <div class="pkg-tags">
+                                        <span class="tag {% if p.ac %}tag-yes{% else %}tag-no{% endif %}">{% if p.ac %}❄️ AC{% else %}🌀 Non-AC{% endif %}</span>
+                                        <span class="tag">{% if p.room == 'Business' %}💼 Business room{% elif p.room == 'Suite' %}👑 Suite{% else %}🛏️ Normal room{% endif %}</span>
+                                        <span class="tag {% if p.pool %}tag-yes{% else %}tag-no{% endif %}">{% if p.pool %}🏊 Swimming pool{% else %}No pool{% endif %}</span>
+                                        {% if p.wifi %}<span class="tag tag-yes">📶 Wi-Fi</span>{% endif %}
+                                        <span class="tag tag-meal">🍳 {{ p.meal }}</span>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="pkg-price">
+                                        {% if p.stay %}৳{{ '{:,}'.format(p.price) }} <small>/ room / night</small>{% else %}Free{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <small class="text-muted d-block mt-3">Prices are our estimates for this destination. We will call to confirm the exact hotel and price.</small>
+
+                        <div class="form-check mt-4 mb-3">
+                            <input class="form-check-input" type="checkbox" name="guide" value="yes" id="guide">
+                            <label class="form-check-label" for="guide">🧭 Add a local guide (৳{{ guide_fee }} / day)</label>
+                        </div>
+                        <div>
+                            <label class="form-label">Special Request (optional)</label>
+                            <textarea name="note" class="form-control" rows="3" maxlength="300" placeholder="e.g. sea view room, vegetarian food..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRAVEL PLAN -->
+                <div class="sec-card mb-4">
+                    <div class="sec-head sec-purple"><i class="bi bi-calendar-range"></i> Travel Plan</div>
+                    <div class="sec-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date *</label>
+                                <input type="date" name="start_date" id="start_date" class="form-control" min="{{ today }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Return Date *</label>
+                                <input type="date" name="end_date" id="end_date" class="form-control" min="{{ today }}" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Adults *</label>
+                                <input type="number" name="adults" id="adults" class="form-control" min="1" max="20" value="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Children</label>
+                                <input type="number" name="children" id="children" class="form-control" min="0" max="20" value="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Rooms *</label>
+                                <input type="number" name="rooms" id="rooms" class="form-control" min="1" max="10" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="sec-card mb-4">
+                    <div class="sec-head sec-blue"><i class="bi bi-person-lines-fill"></i> Contact Details</div>
+                    <div class="sec-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" name="full_name" class="form-control" value="{{ user.name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone *</label>
+                                <input type="tel" name="phone" class="form-control" value="{{ user.phone }}" placeholder="01XXXXXXXXX" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email (optional)</label>
+                                <input type="email" name="email" class="form-control" value="{{ user.email or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Departing From *</label>
+                                <input type="text" name="departure_city" class="form-control" placeholder="e.g. Dhaka" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sec-card summary-box">
+                    <div class="sec-head sec-dark"><i class="bi bi-receipt"></i> Price Summary</div>
+                    <div class="sec-body">
+                        <div class="d-flex justify-content-between mb-1"><span>Package</span><strong id="s_pkg" class="text-end">-</strong></div>
+                        <div class="d-flex justify-content-between mb-1"><span>Nights</span><strong id="s_nights">0</strong></div>
+                        <div class="d-flex justify-content-between mb-1"><span>Hotel</span><span id="s_hotel">৳0</span></div>
+                        <div class="d-flex justify-content-between mb-1"><span>Guide</span><span id="s_guide">৳0</span></div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-5"><strong>Estimated Total</strong><strong id="s_total" class="text-primary">৳0</strong></div>
+                        <small class="text-muted d-block mt-2">Bus, train and flight tickets are not included. You will get links to book them right after this booking.</small>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 mt-3">Confirm Booking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .summary-box { position: sticky; top: 90px; }
+
+    .sec-card { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
+    .sec-head { color: white; font-weight: 700; font-size: 1.05rem; padding: 14px 22px; }
+    .sec-head i { margin-right: 8px; }
+    .sec-body { padding: 22px; }
+    .sec-blue   { background: linear-gradient(90deg, #0072ff, #00c6ff); }
+    .sec-purple { background: linear-gradient(90deg, #7f00ff, #e100ff); }
+    .sec-green  { background: linear-gradient(90deg, #11998e, #38ef7d); }
+    .sec-dark   { background: linear-gradient(90deg, #0b1a2b, #1b5e8c); }
+
+    .pkg {
+        border: 3px solid transparent;
+        border-radius: 16px;
+        padding: 16px;
+        cursor: pointer;
+        user-select: none;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .pkg:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18); }
+    .pkg.selected { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2); transform: translateY(-3px); }
+    .pkg-icon  { font-size: 38px; line-height: 1; }
+    .pkg-title { font-weight: 700; font-size: 1.08rem; margin-top: 6px; }
+    .pkg-desc  { font-size: 0.85rem; opacity: 0.8; margin-bottom: 8px; }
+    .pkg-price { font-weight: 800; font-size: 1.2rem; margin-top: 10px; }
+    .pkg-price small { font-weight: 500; font-size: 0.75rem; }
+
+    .pkg-budget   { background: linear-gradient(135deg, #e3f2fd, #90caf9); }
+    .pkg-standard { background: linear-gradient(135deg, #f3e5f5, #ce93d8); }
+    .pkg-premium  { background: linear-gradient(135deg, #d6f5dc, #7fdc95); }
+    .pkg-luxury   { background: linear-gradient(135deg, #fff3cd, #ffc107); }
+    .pkg-day-trip { background: linear-gradient(135deg, #eeeeee, #cfcfcf); }
+
+    .pkg-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tag {
+        background: rgba(255, 255, 255, 0.75);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .tag-yes  { background: rgba(255, 255, 255, 0.95); color: #0a7d3e; }
+    .tag-no   { background: rgba(255, 255, 255, 0.45); color: #666; }
+    .tag-meal { background: rgba(255, 255, 255, 0.95); color: #b35c00; }
+</style>
+
+<script>
+    const PKG = {{ packages | tojson }};
+    const PRICE = {};
+    const NAME = {};
+    PKG.forEach(p => { PRICE[p.id] = p.stay ? p.price : 0; NAME[p.id] = p.name; });
+    const GUIDE = {{ guide_fee }};
+
+    const money = n => '৳' + Math.round(n).toLocaleString('en-US');
+    const val = id => document.getElementById(id).value;
+
+    function update() {
+        const s = val('start_date'), e = val('end_date');
+        let nights = 0;
+        if (s && e) {
+            nights = Math.round((new Date(e) - new Date(s)) / 86400000);
+            if (nights < 0) nights = 0;
+        }
+        const rooms = parseInt(val('rooms')) || 0;
+        const pid = val('hotel_type');
+
+        const hotel = (PRICE[pid] || 0) * rooms * nights;
+        const guide = document.getElementById('guide').checked ? GUIDE * nights : 0;
+
+        document.getElementById('s_pkg').textContent = NAME[pid] || '-';
+        document.getElementById('s_nights').textContent = nights;
+        document.getElementById('s_hotel').textContent = money(hotel);
+        document.getElementById('s_guide').textContent = money(guide);
+        document.getElementById('s_total').textContent = money(hotel + guide);
+    }
+
+    document.querySelectorAll('#pkgList .pkg').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#pkgList .pkg').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('hotel_type').value = card.dataset.id;
+            update();
+        });
+    });
+
+    document.querySelectorAll('#tierChips .chip').forEach(chip => {
+        chip.addEventListener('click', ev => {
+            ev.preventDefault();
+            document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const t = chip.dataset.tier;
+            document.querySelectorAll('.pkg-col').forEach(col => {
+                col.style.display = (t === 'All' || col.dataset.tier === t) ? '' : 'none';
+            });
+        });
+    });
+
+    document.getElementById('start_date').addEventListener('change', function () {
+        const end = document.getElementById('end_date');
+        end.min = this.value;
+        if (end.value && end.value <= this.value) end.value = '';
+        update();
+    });
+
+    document.querySelectorAll('#bookForm input, #bookForm textarea').forEach(el => {
+        el.addEventListener('input', update);
+        el.addEventListener('change', update);
+    });
+
+    update();
+</script>
+{% endblock %}

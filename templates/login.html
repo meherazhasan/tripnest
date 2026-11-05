@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Login / Sign Up - TripNest{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="form-card">
+
+                <ul class="nav nav-pills nav-fill mb-4" id="authTabs">
+                    <li class="nav-item">
+                        <button class="nav-link {% if tab != 'signup' %}active{% endif %}" data-bs-toggle="pill" data-bs-target="#pane-login" type="button">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link {% if tab == 'signup' %}active{% endif %}" data-bs-toggle="pill" data-bs-target="#pane-signup" type="button">
+                            <i class="bi bi-person-plus-fill"></i> Sign Up
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane fade {% if tab != 'signup' %}show active{% endif %}" id="pane-login">
+                        <h4 class="text-center mb-3">Welcome back 👋</h4>
+                        <form method="POST" action="/login">
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Login</button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade {% if tab == 'signup' %}show active{% endif %}" id="pane-signup">
+                        <h4 class="text-center mb-3">Create your account ✨</h4>
+                        <form method="POST" action="/signup">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" required>
+                                <small class="text-muted">We may call you to confirm your trip.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email (optional)</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter your email">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password *</label>
+                                <input type="password" name="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Sign Up</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

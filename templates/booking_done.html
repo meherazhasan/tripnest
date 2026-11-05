@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Booking {{ b.ref }} - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>Booking Received ✅</h1>
+        <p class="lead">Your booking ID: <strong>{{ b.ref }}</strong></p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- RECEIPT -->
+            <div class="form-card" id="receipt">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h4 class="mb-1">{% if b.kind == 'bd' %}🇧🇩{% else %}🌍{% endif %} {{ b.place }}</h4>
+                        <span class="text-muted">Booked on {{ b.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    </div>
+                    {% if b.status == 'Cancelled' %}
+                        <span class="badge bg-secondary fs-6">Cancelled</span>
+                    {% elif b.status == 'Confirmed' %}
+                        <span class="badge bg-success fs-6">Confirmed</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark fs-6">{{ b.status }}</span>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Traveller</h6>
+                        <div>{{ b.full_name }}</div>
+                        <div>{{ b.phone }}</div>
+                        {% if b.email %}<div>{{ b.email }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Trip</h6>
+                        <div>From: {{ b.departure_city }}</div>
+                        <div>{{ b.start_date.strftime('%d %b %Y') }} to {{ b.end_date.strftime('%d %b %Y') }}</div>
+                        <div>{{ b.nights }} night(s)</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">People &amp; Rooms</h6>
+                        <div>{{ b.adults }} adult(s), {{ b.children }} child(ren)</div>
+                        <div>{{ b.rooms }} room(s)</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted">Hotel package</h6>
+                        <div><strong>{{ pkg.name if pkg else pkg_name(b.hotel_type) }}</strong></div>
+                        {% if pkg and pkg.stay %}
+                        <div class="small">
+                            {% if pkg.ac %}❄️ AC{% else %}🌀 Non-AC{% endif %} •
+                            {{ pkg.room }} room •
+                            {% if pkg.pool %}🏊 Pool{% else %}No pool{% endif %}
+                        </div>
+                        <div class="small">🍳 {{ pkg.meal }}</div>
+                        {% endif %}
+                        <div class="small">Local guide: {% if b.guide %}Yes{% else %}No{% endif %}</div>
+                    </div>
+                </div>
+
+                {% if b.note %}
+                <div class="mb-3">
+                    <h6 class="text-muted">Special Request</h6>
+                    <div>{{ b.note }}</div>
+                </div>
+                {% endif %}
+
+                <hr>
+                <div class="d-flex justify-content-between fs-5">
+                    <strong>Estimated Total (hotel + guide)</strong>
+                    <strong class="text-primary">৳{{ '{:,}'.format(b.total_price) }}</strong>
+                </div>
+                <small class="text-muted">Estimated price. No payment has been taken. We will call you to confirm the hotel. Bus, train and flight tickets are not included.</small>
+            </div>
+
+            <div class="text-center mt-4 no-print">
+                <button onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 me-2">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+                <a href="/my-bookings" class="btn btn-primary rounded-pill px-4">My Bookings</a>
+            </div>
+
+            <!-- JOURNEY -->
+            {% if b.status != 'Cancelled' %}
+            <div class="journey no-print mt-5">
+                <div class="journey-head">
+                    <h4 class="mb-1">🧭 Plan your journey to {{ b.place }}</h4>
+                    <small>Starting from {{ b.departure_city }}. Tap a card to open the official booking site.</small>
+                </div>
+
+                <div class="row g-3 p-3">
+                    {% if b.kind == 'bd' %}
+                    <div class="col-6 col-md-3">
+                        <a class="go go-bus" target="_blank" rel="noopener" href="{{ links.bus }}">
+                            <div class="go-icon">🚌</div><div class="go-title">Bus</div><div class="go-sub">Shohoz tickets</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a class="go go-train" target="_blank" rel="noopener" href="{{ links.train }}">
+                            <div class="go-icon">🚆</div><div class="go-title">Train</div><div class="go-sub">Bangladesh Railway</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a class="go go-air" target="_blank" rel="noopener" href="{{ links.biman }}">
+                            <div class="go-icon">✈️</div><div class="go-title">Flight</div><div class="go-sub">Biman Bangladesh</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a class="go go-road" target="_blank" rel="noopener" href="{{ links.drive }}">
+                            <div class="go-icon">🚗</div><div class="go-title">By road</div><div class="go-sub">Google Maps route</div>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-12 col-md-4">
+                        <a class="go go-air" target="_blank" rel="noopener" href="{{ links.flights }}">
+                            <div class="go-icon">✈️</div><div class="go-title">Flights</div><div class="go-sub">Google Flights</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <a class="go go-train" target="_blank" rel="noopener" href="{{ links.transit }}">
+                            <div class="go-icon">🚆</div><div class="go-title">Public transport</div><div class="go-sub">Bus / train routes</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <a class="go go-road" target="_blank" rel="noopener" href="{{ links.drive }}">
+                            <div class="go-icon">🚗</div><div class="go-title">By road</div><div class="go-sub">Google Maps route</div>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if b.kind == 'bd' %}
+                <div class="px-3 pb-2">
+                    <a class="btn btn-sm btn-outline-secondary rounded-pill mb-2" target="_blank" rel="noopener" href="{{ links.flights }}">
+                        <i class="bi bi-search"></i> Compare all flights on Google Flights
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="px-3 pb-3">
+                    <div class="small text-muted mb-2">Want to see real hotels with ratings near {{ b.place }}?</div>
+                    <a class="btn btn-sm btn-success rounded-pill me-1 mb-1" target="_blank" rel="noopener" href="{{ links.hotels_map }}">
+                        <i class="bi bi-geo-alt"></i> Hotels on Google Maps
+                    </a>
+                    <a class="btn btn-sm btn-outline-success rounded-pill mb-1" target="_blank" rel="noopener" href="{{ links.booking }}">
+                        <i class="bi bi-search"></i> Booking.com
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .journey {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    .journey-head {
+        background: linear-gradient(90deg, #ff7e00, #ffb347);
+        color: white;
+        padding: 16px 22px;
+    }
+    .go {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        color: #222;
+        border-radius: 16px;
+        padding: 20px 8px;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .go:hover { transform: translateY(-6px); box-shadow: 0 12px 22px rgba(0, 0, 0, 0.22); color: #000; }
+    .go-icon  { font-size: 44px; line-height: 1.1; }
+    .go-title { font-weight: 700; margin-top: 6px; }
+    .go-sub   { font-size: 0.82rem; opacity: 0.8; }
+    .go-bus   { background: linear-gradient(135deg, #fff1c4, #ffd45e); }
+    .go-train { background: linear-gradient(135deg, #d6f5dc, #7fdc95); }
+    .go-air   { background: linear-gradient(135deg, #d4ebff, #7cc0ff); }
+    .go-road  { background: linear-gradient(135deg, #ffe0e0, #ff9e9e); }
+
+    @media print {
+        .site-nav, .site-footer, .page-hero, .no-print, .alert { display: none !important; }
+        body { background: white !important; }
+        .form-card { box-shadow: none !important; }
+    }
+</style>
+{% endblock %}

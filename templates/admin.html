@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - TripNest{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <div class="container">
+        <h1>Admin Panel 🛠️</h1>
+        <p class="lead">Customers, trip requests and phone numbers in one place</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <div class="row mb-4 text-center">
+        <div class="col-md-4 mb-3">
+            <div class="feature-box"><div class="feature-icon">👥</div><h3>{{ users|length }}</h3><p class="mb-0">Customers</p></div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="feature-box"><div class="feature-icon">🎫</div><h3>{{ bookings|length }}</h3><p class="mb-0">Trip Requests</p></div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="feature-box"><div class="feature-icon">⏳</div><h3>{{ pending }}</h3><p class="mb-0">Waiting for your call</p></div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Trip Requests</h4>
+    {% if bookings %}
+    <div class="table-responsive form-card mb-5">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Call</th>
+                    <th>Destination &amp; Stay</th>
+                    <th>Dates</th>
+                    <th>People</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td><a href="/booking/{{ b.id }}">{{ b.ref }}</a></td>
+                    <td>{{ b.full_name }}<br><small class="text-muted">from {{ b.departure_city }}</small></td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-success rounded-pill" href="tel:{{ b.phone }}">
+                            <i class="bi bi-telephone-fill"></i> {{ b.phone }}
+                        </a>
+                    </td>
+                    <td>{% if b.kind == 'bd' %}🇧🇩{% else %}🌍{% endif %} {{ b.place }}
+                        <br><small class="text-primary">🏨 {{ pkg_name(b.hotel_type) }} × {{ b.rooms }} room(s){% if b.guide %} + guide{% endif %}</small>
+                        {% if b.note %}<br><small class="text-muted">Note: {{ b.note }}</small>{% endif %}
+                    </td>
+                    <td class="text-nowrap">{{ b.start_date.strftime('%d %b') }} - {{ b.end_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ b.adults + b.children }}</td>
+                    <td>৳{{ '{:,}'.format(b.total_price) }}</td>
+                    <td>
+                        <form method="POST" action="/admin/booking/{{ b.id }}/status" class="d-flex gap-1">
+                            <select name="status" class="form-select form-select-sm">
+                                {% for s in ['Pending', 'Confirmed', 'Cancelled'] %}
+                                <option value="{{ s }}" {% if b.status == s %}selected{% endif %}>{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No trip requests yet.</div>
+    {% endif %}
+
+    <h4 class="mb-3">All Customers</h4>
+    <div class="table-responsive form-card">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Joined</th></tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ u.name }}</td>
+                    <td><a href="tel:{{ u.phone }}">{{ u.phone }}</a></td>
+                    <td>{{ u.email or '-' }}</td>
+                    <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

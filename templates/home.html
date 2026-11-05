@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TripNest - Choose Your Journey</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0b1a2b;
+            color: white;
+            overflow: hidden;
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ---------- BACKGROUND SLIDESHOW ---------- */
+        .slide {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            animation: slideShow 28s infinite;
+        }
+
+        .s1 { background-image: url('https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&w=1600&q=80'); animation-delay: 0s; }
+        .s2 { background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80'); animation-delay: 7s; }
+        .s3 { background-image: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80'); animation-delay: 14s; }
+        .s4 { background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80'); animation-delay: 21s; }
+
+        @keyframes slideShow {
+            0%   { opacity: 0; transform: scale(1); }
+            5%   { opacity: 1; }
+            25%  { opacity: 1; }
+            30%  { opacity: 0; transform: scale(1.12); }
+            100% { opacity: 0; transform: scale(1.12); }
+        }
+
+        .shade {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(5, 15, 30, 0.55), rgba(5, 15, 30, 0.78));
+            z-index: 1;
+        }
+
+        /* ---------- CLOUDS ---------- */
+        .cloud {
+            position: absolute;
+            left: -350px;
+            width: 280px;
+            height: 70px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.22);
+            filter: blur(18px);
+            z-index: 2;
+            animation: drift linear infinite;
+        }
+
+        .c1 { top: 15%; animation-duration: 40s; }
+        .c2 { top: 45%; width: 360px; height: 90px; animation-duration: 55s; animation-delay: 8s; }
+        .c3 { top: 75%; animation-duration: 48s; animation-delay: 20s; }
+
+        @keyframes drift {
+            from { transform: translateX(0); }
+            to   { transform: translateX(calc(100vw + 700px)); }
+        }
+
+        /* ---------- GLOWING PARTICLES ---------- */
+        .dot {
+            position: absolute;
+            bottom: -20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+            z-index: 2;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(0); opacity: 0; }
+            10%  { opacity: 0.9; }
+            100% { transform: translateY(-110vh); opacity: 0; }
+        }
+
+        /* ---------- FLYING PLANES ---------- */
+        .flight {
+            position: absolute;
+            left: -300px;
+            z-index: 3;
+            animation: flight linear infinite;
+        }
+
+        .flight-inner {
+            display: flex;
+            align-items: center;
+            transform: rotate(-14deg);
+        }
+
+        .trail {
+            width: 220px;
+            height: 3px;
+            background: repeating-linear-gradient(90deg, rgba(255,255,255,0.9) 0 10px, transparent 10px 20px);
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+            mask-image: linear-gradient(90deg, transparent, #000);
+        }
+
+        .plane {
+            font-size: 44px;
+            display: inline-block;
+            transform: rotate(45deg);
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        .f1 { top: 72%; animation-duration: 14s; }
+        .f2 { top: 88%; animation-duration: 22s; animation-delay: 7s; opacity: 0.7; }
+        .f2 .plane { font-size: 28px; }
+        .f2 .trail { width: 140px; }
+
+        @keyframes flight {
+            from { transform: translate(0, 0); }
+            to   { transform: translate(calc(100vw + 600px), -55vh); }
+        }
+
+        /* ---------- CONTENT ---------- */
+        .content {
+            position: relative;
+            z-index: 5;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo .globe {
+            font-size: 34px;
+            display: inline-block;
+            animation: spinGlobe 8s linear infinite;
+        }
+
+        .logo .name {
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            font-size: 36px;
+            font-weight: bold;
+            color: #00e0ff;
+            text-shadow: 0 0 12px rgba(0, 224, 255, 0.7);
+        }
+
+        @keyframes spinGlobe {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: clamp(32px, 6vw, 64px);
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            animation: fadeUp 1s ease 0.3s forwards;
+        }
+
+        .sub {
+            font-size: clamp(16px, 2vw, 22px);
+            margin-top: 10px;
+            color: #d6e6f5;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.9s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(35px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- CHOICE CARDS ---------- */
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 45px;
+        }
+
+        .card-wrap {
+            opacity: 0;
+            animation: fadeUp 1s ease 1.5s forwards, bob 5s ease-in-out 2.6s infinite;
+        }
+
+        .card-wrap.w2 {
+            animation: fadeUp 1s ease 1.9s forwards, bob 5s ease-in-out 3s infinite;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+
+        .card {
+            display: block;
+            position: relative;
+            width: 340px;
+            height: 230px;
+            border-radius: 20px;
+            overflow: hidden;
+            text-decoration: none;
+            color: white;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+            transition: transform 0.35s, box-shadow 0.35s, border-color 0.35s;
+        }
+
+        .card:hover {
+            transform: scale(1.06);
+            border-color: #00e0ff;
+            box-shadow: 0 18px 40px rgba(0, 224, 255, 0.35);
+            color: white;
+        }
+
+        .card.bd    { background-image: url('https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&w=800&q=80'); }
+        .card.world { background-image: url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80'); }
+
+        .card .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.1));
+        }
+
+        .card .text {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .card h3 { font-size: 26px; margin-bottom: 4px; }
+        .card p  { font-size: 15px; color: #dbe8f3; }
+
+        .card .go {
+            display: inline-block;
+            margin-top: 8px;
+            font-weight: 600;
+            color: #00e0ff;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .card:hover .go {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <div class="slide s1"></div>
+        <div class="slide s2"></div>
+        <div class="slide s3"></div>
+        <div class="slide s4"></div>
+        <div class="shade"></div>
+
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+
+        <div class="flight f1"><div class="flight-inner"><span class="trail"></span><span class="plane">✈️</span></div></div>
+        <div class="flight f2"><div class="flight-inner"><span class="trail"></span><span class="plane">✈️</span></div></div>
+
+        <div id="dots"></div>
+
+        <div class="content">
+            <div class="logo">
+                <span class="globe">🌍</span>
+                <span class="name">TripNest</span>
+            </div>
+
+            <h1>Where do you want to go?</h1>
+            <p class="sub">Choose your journey</p>
+
+            <div class="choices">
+                <div class="card-wrap">
+                    <a href="/destinations" class="card bd">
+                        <div class="overlay"></div>
+                        <div class="text">
+                            <h3>🇧🇩 Discover Bangladesh</h3>
+                            <p>55+ amazing places across 8 divisions</p>
+                            <span class="go">Explore now →</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="card-wrap w2">
+                    <a href="/world" class="card world">
+                        <div class="overlay"></div>
+                        <div class="text">
+                            <h3>🌍 Beyond Borders</h3>
+                            <p>Explore every country around the world</p>
+                            <span class="go">Explore now →</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const box = document.getElementById('dots');
+        for (let i = 0; i < 28; i++) {
+            const d = document.createElement('span');
+            d.className = 'dot';
+            const size = 2 + Math.random() * 4;
+            d.style.width = size + 'px';
+            d.style.height = size + 'px';
+            d.style.left = Math.random() * 100 + '%';
+            d.style.animationDuration = (10 + Math.random() * 14) + 's';
+            d.style.animationDelay = (Math.random() * 12) + 's';
+            box.appendChild(d);
+        }
+    </script>
+
+</body>
+</html>
